@@ -1,0 +1,1106 @@
+openapi: 3.0.0
+info:
+  description: This is use for suco and member
+  version: 1.0.0-oas3
+  title: Suco Project
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: Auth
+    description: Authorization
+  - name: Projects
+    description: Suco Projects
+  - name: Translations
+    description: All Translation in projects
+  - name: Push
+    description: Push Notification
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Use for login User
+      parameters:
+        - in: header
+          name: Device-Id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+            example:
+              email: auth@auth.com
+              password: 12345678
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_login_200'
+        '400':
+          $ref: '#/components/responses/auth_400'
+        '422':
+          $ref: '#/components/responses/auth_422'
+  /auth/login/with-work-chat:
+    post:
+      tags:
+        - Auth
+      summary: Login with workchat
+      parameters:
+        - in: header
+          name: Device-Id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+            example:
+              email: thuy.mtp@neo-lab.vn
+              password: BeMyWife
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_login_200'
+        '400':
+          $ref: '#/components/responses/auth_400'
+        '422':
+          $ref: '#/components/responses/ValidateError'
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register new user
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                password_confirmation:
+                  type: string
+                  format: password
+            encoding:
+              avatar:
+                contentType: 'image/png, image/jpeg'
+            example:
+              avatar:
+                data: xxx
+              name: Laura Crimson
+              email: lauraCrimson@email.com
+              password: pass1234
+              password_confirmation: pass1234
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_register_200'
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Let user logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_logout_200'
+  /auth/password/reset/send-email:
+    post:
+      tags:
+        - Auth
+      summary: Send reset password link that attach reset password token to email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+            example:
+              email: example@email.com
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_send_email_200'
+  /auth/password/reset:
+    put:
+      tags:
+        - Auth
+      summary: Execute reset password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+            example:
+              token: access_token
+              email: example@email.com
+              password: pass1234
+              password_confirmation: pass1234
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_reset_password_200'
+  /auth/password/change:
+    put:
+      tags:
+        - Auth
+      summary: Change password
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+                - new_password
+                - new_password_confirmation
+              properties:
+                password:
+                  type: string
+                new_password:
+                  type: string
+                new_password_confirmation:
+                  type: string
+            example:
+              password: 12345678
+              new_password: NamDepTrai
+              new_password_confirmation: NamDepTrai
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_change_password_200'
+        '400':
+          $ref: '#/components/responses/auth_400'
+  /auth/profile:
+    get:
+      tags:
+        - Auth
+      summary: Get Auth Profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_profile_200'
+    put:
+      tags:
+        - Auth
+      summary: Update Auth Profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                language:
+                  type: string
+                position:
+                  type: string
+              example:
+                name: 'New auth Name'
+                language: 'en'
+                position: 'The World Creator'
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_profile_200'
+  /auth/profile/avatar:
+    post:
+      tags:
+        - Auth
+      summary: Update Avatar
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+              example:
+                avatar:
+                  data: xxx
+            encoding:
+              avatar:
+                contentType: 'image/png, image/jpeg'
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_profile_avatar_200'
+  /auth/translation/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Id of translation
+        schema:
+          type: integer
+    post:
+      tags:
+        - Auth
+      summary: Like translation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_like_200'
+        '400':
+          $ref: '#/components/responses/auth_like_400'
+    delete:
+      tags:
+        - Auth
+      summary: Delete an liked translation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_like_200'
+        '400':
+          $ref: '#/components/responses/auth_like_400'
+  /auth/translation/{id}/archive:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Id of translation
+        schema:
+          type: integer
+    post:
+      tags:
+        - Auth
+      summary: Archive an translation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_archive_200'
+        '400':
+          $ref: '#/components/responses/auth_archive_400'
+    delete:
+      tags:
+        - Auth
+      summary: Delete an archived translation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_archive_200'
+        '400':
+          $ref: '#/components/responses/auth_archive_400'
+  /auth/translations/archived:
+    get:
+      tags:
+        - Auth
+      summary: Get Auth Profile
+      parameters:
+        - in: header
+          name: Device-Id
+          schema:
+            type: string
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/auth_get_archives_200'
+  /push:
+    post:
+      tags:
+        - Push
+      summary: Store Push Channel_id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Device-Id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_type:
+                  type: string
+                channel_id:
+                  type: string
+            example:
+              device_type: ios
+              channel_id: 36b3aa25-1395-4f85-9898-2262bff14ef9
+      responses:
+        '200':
+          $ref: '#/components/responses/push_200'
+        '400':
+          $ref: '#/components/responses/push_400'
+        '401':
+          $ref: '#/components/responses/push_401'
+        '403':
+          $ref: '#/components/responses/push_403'
+        '422':
+          $ref: '#/components/responses/push_422'
+    delete:
+      tags:
+        - Push
+      summary: Disassociate channel id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Device-Id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_type:
+                  type: string
+                channel_id:
+                  type: string
+            example:
+              device_type: ios
+              channel_id: 36b3aa25-1395-4f85-9898-2262bff14ef9
+      responses:
+        '200':
+          $ref: '#/components/responses/push_200'
+        '400':
+          $ref: '#/components/responses/push_400'
+        '401':
+          $ref: '#/components/responses/push_401'
+        '403':
+          $ref: '#/components/responses/push_403'
+        '422':
+          $ref: '#/components/responses/push_422'
+  /projects:
+    get:
+      tags:
+        - Projects
+      summary: get all project item
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/perPage'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidateError'
+    post:
+      tags:
+        - Projects
+      summary: create a project
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                description:
+                  type: string
+                  minLength: 1
+            examples:
+              wakumo:
+                value:
+                  name: Wakumo
+                  description: Wakumo seek jobs
+              dmm:
+                value:
+                  name: DMM
+                  description: Cars and other
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidateError'
+  /projects/{projectID}:
+    parameters:
+      - name: projectID
+        in: path
+        required: true
+        description: The ID of project to return
+        schema:
+          type: integer
+    get:
+      tags:
+        - Projects
+      summary: get single project
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      tags:
+        - Projects
+      summary: update single project
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                description:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags:
+        - Projects
+      summary: delete single project
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /projects/search:
+    get:
+      tags:
+        - Projects
+      summary: search project by name
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: key
+          in: query
+          required: false
+          description: keyword to search in project name
+          schema:
+            type: string
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/perPage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /projects/{projectID}/translations:
+    get:
+      tags:
+        - Projects
+      summary: get Translation of project
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectID
+          in: path
+          required: true
+          description: Project ID want return all translations
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/perPage'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /translations:
+    get:
+      tags:
+        - Translations
+      summary: get all translation
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/perPage'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidateError'
+  /translations/{translationId}:
+    parameters:
+      - name: translationId
+        in: path
+        required: true
+        description: The ID of project to return
+        schema:
+          type: integer
+    get:
+      tags:
+        - Translations
+      summary: get all translation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /translations/search:
+    post:
+      tags:
+        - Translations
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - key
+                - projects
+              properties:
+                key:
+                  type: string
+                  minLength: 1
+                  description: keyword to search, can be in phrase or meaning, if no key it will respond all translation in project
+                projects:
+                  type: array
+                  items:
+                    type: integer
+                  minLength: 1
+                  description: array of project_id, can be null or empty, if no project choosen it will respond with translations in all project
+            examples:
+              case1:
+                value:
+                  key: a
+                  projects: [1, 2]
+              case2:
+                value:
+                  key: Hello
+                  projects: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  responses:
+    auth_login_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.login.success
+            data:
+              access_token: token_value
+              token_type: bearer
+              expired_in: 3000
+    auth_logout_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.logout.success
+    auth_register_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.register.success
+            data:
+              access_token: token_value
+              token_type: bearer
+              expired_in: 3000
+    auth_send_email_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.reset_password.send_email_success
+            data: null
+    auth_reset_password_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.reset_password.success
+            data:
+              access_token: token_value
+              token_type: bearer
+              expired_in: 3000
+    auth_change_password_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.change_password.success
+            data:
+              access_token: token_value
+              token_type: bearer
+              expired_in: 3000
+    auth_400:
+      description: Bad Request Status code 400
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          examples:
+            login:
+              value:
+                message: exceptions.auth.login.invalid_credentials
+                data: null
+            change_password:
+              value:
+                message: auth.change_password.invalid_password
+                data: null
+    auth_422:
+      description: HTTP Unprocessable request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          examples:
+            login:
+              value:
+                message: exceptions.validation
+                data:
+                  errors:
+                    email: validations.email.required | validations.email.unique | validations.email.email | validations.email.max
+                    password: validations.password.required | validations.password_confirmation.confirmed | validations.password.min | validations.password.max
+            register:
+              value:
+                message: exceptions.validation
+                data:
+                  errors:
+                    avatar: validations.avatar.required | validations.avatar.image | validations.avatar.max_file_update
+                    name: validations.name.required | validations.name.string | validations.name.string
+                    email: validations.email.required | validations.email.unique | validations.email.email | validations.email.max
+                    password: validations.password.required | validations.password_confirmation.confirmed | validations.password.min | validations.password.max
+            send_email_reset_password:
+              value:
+                message: exceptions.validation
+                data:
+                  errors:
+                    email: validations.email.required | validations.email.unique | validations.email.email | validations.email.max
+            reset_password:
+              value:
+                message: exceptions.validation
+                data:
+                  errors:
+                    password: validations.password.required | validations.password_confirmation.confirmed | validations.password.min | validations.password.max
+    auth_profile_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          examples:
+            GET:
+              value:
+                message: auth.profile.get_profile_success
+                data:
+                  name: auth
+                  email: auth@auth.com,
+                  language: en
+                  position: SI1 Studio,
+                  deleted_at: null,
+                  created_at: '2019-07-12 19:19:19'
+                  updated_at: '2019-07-12 19:19:19'
+            UPDATE:
+              value:
+                message: auth.profile.update_profile_success
+                data:
+                  name: auth
+                  email: auth@auth.com,
+                  language: en
+                  position: SI1 Studio,
+                  deleted_at: null,
+                  created_at: '2019-07-12 19:19:19'
+                  updated_at: '2019-07-12 19:19:19'
+    auth_profile_avatar_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.profile.update_avatar_success,
+            data:
+              avatar: 'https://si1-suco.herokuapp.com/storage/user/avatar/hashName.jpg'
+    auth_like_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          examples:
+            POST:
+              value:
+                message: auth.like.success
+                data:
+                  total_like: 13
+            DELETE:
+              value:
+                message: auth.like.delete.success
+                data:
+                  total_like: 12
+    auth_like_400:
+      description: Request Fail
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          examples:
+            POST:
+              value:
+                message: auth.like.fail
+                data: null
+            DELETE:
+              value:
+                message: auth.like.delete.fail
+                data: null
+    auth_archive_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          examples:
+            POST:
+              value:
+                message: auth.archive.success
+                data: null
+            DELETE:
+              value:
+                message: auth.archive.delete.success
+                data: null
+    auth_archive_400:
+      description: Request Fail
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          examples:
+            POST:
+              value:
+                message: auth.archive.fail
+                data: null
+            DELETE:
+              value:
+                message: auth.archive.delete.fail
+                data: null
+    auth_get_archives_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          example:
+            message: auth.get_archives.success
+            data:
+              archives:
+                - id: 1
+                  admin_id: 10
+                  project_id: 10
+                  phrase: example
+                  meaning: content
+                  description: description
+                  total_like: 10
+                  total_comment: 10
+                  project:
+                    id: 10
+                    admin_id: 10
+                    name: project name
+                    description: project description
+                - id: 2
+                  admin_id: 11
+                  project_id: 11
+                  phrase: example
+                  meaning: content
+                  description: description
+                  total_like: 11
+                  total_comment: 11
+                  project:
+                    id: 11
+                    admin_id: 11
+                    name: project name
+                    description: project description
+              pagination:
+                current_page: 2
+                from: 16
+                to: 30
+                per_page: 15
+                total: 225
+                first_page: 1
+                last_page: 15
+                first_page_url: http://18.140.23.67/api/v1/auth/translations/archived?page=1
+                last_page_url: http://18.140.23.67/api/v1/auth/translations/archived?page=15
+                next_page_url: http://18.140.23.67/api/v1/auth/translations/archived?page=3
+                prev_page_url: http://18.140.23.67/api/v1/auth/translations/archived?page=1
+                path: http://18.140.23.67/api/v1/auth/translations/archived
+    push_200:
+      description: Request Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          examples:
+            POST:
+              value:
+                message: push.create.success
+                data: null
+            DELETE:
+              value:
+                message: push.delete.success
+    push_400:
+      description: Request Fail
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          example:
+            message: exceptions.push.bad_request
+            data: null
+    push_401:
+      description: Request Fail
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          example:
+            message: exceptions.push.unauthorized
+            data: null
+    push_403:
+      description: Request Fail
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messages:
+                type: string
+              data:
+                type: object
+          example:
+            message: exceptions.push.forbidden
+            data: null
+    push_422:
+      description: HTTP Unprocessable request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: object
+          example:
+            message: exceptions.validation
+            data:
+              errors:
+                device_type: validations.device_type.required | validations.device_type.string | validations.device_type.in|ios,android
+                channel_id: validations.channel_id.required | validations.channel_id.string | validations.channel_id.min | validations.channel_id.max
+    Success:
+      description: Success response
+    UnauthorizedError:
+      description: Access token missing or invalid
+    NotFoundError:
+      description: Not found resource
+    ValidateError:
+      description: Invalid Input
+    Unauthenticated:
+      description: Email or password not valid
+  parameters:
+    page:
+      name: page
+      in: query
+      required: false
+      description: Page of records' result
+      schema:
+        type: integer
+    perPage:
+      name: perPage
+      in: query
+      required: false
+      description: Record per page
+      schema:
+        type: integer
+servers:
+  - url: 'http://18.140.23.67/api/v1'
+  - url: 'http://backend.suco.local/api/v1'

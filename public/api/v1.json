@@ -1,0 +1,428 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "This is use for suco and member",
+    "version": "1.0.0-oas3",
+    "title": "Suco Project",
+    "contact": {
+      "email": "you@your-company.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authorization"
+    },
+    {
+      "name": "Projects",
+      "description": "Suco Projects"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Use for login User",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  }
+                }
+              },
+              "examples": {
+                "admin": {
+                  "value": {
+                    "email": "admin@admin.com",
+                    "password": 12345678
+                  }
+                },
+                "user": {
+                  "value": {
+                    "email": "user@gmail.com",
+                    "password": 12345678
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/auth_success"
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidCredentials"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidateError"
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register new user",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              },
+              "encoding": {
+                "avatar": {
+                  "contentType": "image/png, image/jpeg"
+                }
+              },
+              "examples": {
+                "user": {
+                  "value": {
+                    "avatar": {
+                      "data": "xxx"
+                    },
+                    "name": "Laura Crimson",
+                    "email": "lauraCrimson@email.com",
+                    "password": "pass1234",
+                    "password_confirmation": "pass1234"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/auth_success"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Let user logout",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/auth_success"
+          }
+        }
+      }
+    },
+    "/auth/password/reset/send-email": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Send reset password link that attach reset password token to email",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              },
+              "examples": {
+                "admin": {
+                  "value": {
+                    "email": "example@email.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/auth_email"
+          }
+        }
+      }
+    },
+    "/auth/password/reset": {
+      "put": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Execute reset password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  }
+                }
+              },
+              "examples": {
+                "admin": {
+                  "value": {
+                    "token": "access_token",
+                    "email": "example@email.com",
+                    "password": "pass1234",
+                    "password_confirmation": "pass1234"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/auth_success"
+          }
+        }
+      }
+    },
+    "/auth/profile": {},
+    "/auth/profile/avatar": {},
+    "/auth/token/validate": {},
+    "/projects": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "get all project item",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "perPage",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "required": false,
+            "description": "Record per page"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "required": false,
+            "description": "Page of records' result"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidateError"
+          }
+        }
+      }
+    },
+    "/projects/{projectID}": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "get single project",
+        "parameters": [
+          {
+            "name": "projectID",
+            "in": "path",
+            "required": true,
+            "description": "The ID of project to return",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "#/components/responses/NotFoundError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "responses": {
+      "auth_success": {
+        "description": "Request Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object"
+                }
+              }
+            },
+            "examples": {
+              "login": {
+                "value": {
+                  "message": "auth.login.success",
+                  "data": {
+                    "access_token": "token_value",
+                    "token_type": "bearer",
+                    "expired_in": 3000
+                  }
+                }
+              },
+              "register": {
+                "value": {
+                  "message": "auth.login.success",
+                  "data": {
+                    "access_token": "token_value",
+                    "token_type": "bearer",
+                    "expired_in": 3000
+                  }
+                }
+              },
+              "logout": {
+                "value": {
+                  "message": "auth.login.success",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "auth_email": {
+        "description": "Request Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object"
+                }
+              }
+            },
+            "examples": {
+              "success": {
+                "value": {
+                  "message": "auth.send_email.success",
+                  "data": null
+                }
+              },
+              "fail": {
+                "value": {
+                  "message": "auth.send_email.fail",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "Success": {
+        "description": "Success response"
+      },
+      "UnauthorizedError": {
+        "description": "Access token missing or invalid"
+      },
+      "NotFoundError": {
+        "description": "Not found resource"
+      },
+      "ValidateError": {
+        "description": "Invalid Input"
+      },
+      "InvalidCredentials": {
+        "description": "Email or password not valid"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://si1-suco.herokuapp.com/api/v1"
+    }
+  ]
+}
